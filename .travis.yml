@@ -1,0 +1,53 @@
+sudo: true
+os: linux
+cache: false
+language: generic
+
+git:
+  depth: false
+
+stages:
+  - sonarqube_scan_publish
+    if: (branch = master) OR (branch =~ feature\/*)
+  - validate_against_QA
+    if: branch =~ feature\/*
+  - deploy_to_QA
+    if: branch = QA
+  - validate_against_UAT
+    if: branch = QA
+  - deploy_to_UAT
+    if: branch = master
+  - validate_against_PROD
+    if: branch = master
+  - deploy_to_PROD
+    if: tag =~ /^v[0-9.]+$/
+
+
+jobs:
+  include:
+      - stage: sonarqube_scan_publish
+        script: echo 'sonarqube_scan_publish'
+      - stage: validate_against_SIT
+        script:
+          - echo 'validate_against_SIT'
+      - stage: deploy_to_SIT
+        script: echo 'deploy_to_SIT'
+      - stage: validate_against_UAT
+        script: echo 'validate_against_UAT'
+      - stage: deploy_to_UAT
+        script: echo 'deploy_to_UAT'
+      - stage: validate_against_PROD
+        script: echo 'validate_against_PROD'
+      - stage: deploy_to_PROD
+        script: echo 'deploy_to_PROD'
+
+env:
+- URL=https://appiriodx-website-prod.s3.amazonaws.com/downloads/adx-dev-cli-linux.tar.gz
+
+before_install:
+- mkdir adx
+- cd adx
+- wget $URL
+- tar xzf adx-dev-cli-linux.tar.gz
+- env
+- export PATH=$(pwd):$PATH

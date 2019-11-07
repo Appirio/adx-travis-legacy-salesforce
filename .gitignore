@@ -5,6 +5,7 @@
 !/.gitignore
 !/.gitlab-ci.yml
 !/.ezbake
+!/.travis.yml
 
 # local config files
 .env
