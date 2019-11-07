@@ -42,6 +42,7 @@ jobs:
           - adx cmc:manifest --message "$TRAVIS_BRANCH $TRAVIS_COMMIT_MESSAGE"
 
       - stage: sonarqube_scan_publish
+        name: sonarqube_scan_publish
         before_script:
           - wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-3.0.3.778-linux.zip
           - unzip sonar-scanner-cli-3.0.3.778-linux.zip
