@@ -29,7 +29,7 @@ stages:
   - name: validate_against_PROD
     if: branch = master
   - name: deploy_to_PROD
-    if: tag =~ ^v[0-9.]+$
+    if: tag =~ /^v[0-9.]+$/
 
 
 jobs:
@@ -38,6 +38,10 @@ jobs:
 
   include:
       - stage: cmc_manifest_creation
+        before_script:
+          - wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-3.0.3.778-linux.zip
+          - unzip sonar-scanner-cli-3.0.3.778-linux.zip
+          - export PATH=$(pwd)/sonar-scanner-3.0.3.778-linux/bin:$PATH
         script:
           - adx cmc:manifest --message "$TRAVIS_BRANCH $TRAVIS_COMMIT_MESSAGE"
 
