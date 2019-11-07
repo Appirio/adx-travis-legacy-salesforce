@@ -1,0 +1,84 @@
+sudo: true
+os: linux
+cache: false
+language: generic
+
+git:
+  depth: false
+
+before_install:
+- wget https://appiriodx-website-prod.s3.amazonaws.com/downloads/adx-dev-cli-linux.tar.gz -P adx
+- (cd adx && tar -xzf adx-dev-cli-linux.tar.gz)
+- export PATH=$(pwd)/adx:$PATH
+
+stages:
+  - name: cmc_manifest_creation
+    if: branch =~ feature\/*
+  - name: sonarqube_scan_publish
+    if: (branch = master) OR (branch =~ feature\/*)
+  - name: validate_against_QA
+    if: branch =~ feature\/*
+  - name: deploy_to_QA
+    if: branch = QA
+  - name: validate_against_UAT
+    if: branch = QA
+  - name: deploy_to_UAT
+    if: branch = master
+  - name: validate_against_PROD
+    if: branch = master
+  - name: deploy_to_PROD
+    if: tag =~ /^v[0-9.]+$/
+
+jobs:
+  allow_failures:
+    - stage: cmc_manifest_creation
+
+  include:
+      - stage: cmc_manifest_creation
+        name: cmc_manifest_creation
+        script:
+          - adx cmc:manifest --message "$TRAVIS_BRANCH $TRAVIS_COMMIT_MESSAGE"
+
+      - stage: sonarqube_scan_publish
+        name: sonarqube_scan_publish
+        before_script:
+          - wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-3.0.3.778-linux.zip -P adx
+          - (cd adx && unzip sonar-scanner-cli-3.0.3.778-linux.zip)
+          - export PATH=$(pwd)/adx/sonar-scanner-3.0.3.778-linux/bin:$PATH
+        script: sonar-scanner -Dsonar.sources=. -Dsonar.login=$SONAR_LOGIN -Dsonar.analysis.mode=publish
+
+      - stage: validate_against_QA
+        name: validate_against_QA
+        script:
+          - adx sort:check
+          - adx deploy:package --deploy.testLevel NoTestRun --target QA
+
+      - stage: deploy_to_QA
+        name: deploy_to_QA
+        script:
+          - adx sort:check
+          - adx deploy:package --deploy.testLevel RunLocalTests --deploy.checkOnly false --target QA
+
+      - stage: validate_against_UAT
+        name: validate_against_UAT
+        script:
+          - adx sort:check
+          - adx deploy:package --deploy.testLevel NoTestRun --target UAT
+
+      - stage: deploy_to_UAT
+        name: deploy_to_UAT
+        script:
+          - adx sort:check
+          - adx deploy:package --deploy.testLevel RunLocalTests --deploy.checkOnly false --target UAT
+
+      - stage: validate_against_PROD
+        name: validate_against_PROD
+        script:
+          - adx sort:check
+          - adx deploy:package --deploy.testLevel NoTestRun --target PROD
+
+      - stage: deploy_to_PROD
+        name: deploy_to_PROD
+        script:
+          - adx sort:check
+          - adx deploy:package --deploy.testLevel RunLocalTests --deploy.checkOnly false --target PROD
