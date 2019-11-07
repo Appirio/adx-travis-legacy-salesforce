@@ -6,7 +6,16 @@ language: generic
 git:
   depth: false
 
+before_install:
+- mkdir adx
+- cd adx
+- wget https://appiriodx-website-prod.s3.amazonaws.com/downloads/adx-dev-cli-linux.tar.gz
+- tar xzf adx-dev-cli-linux.tar.gz
+- export PATH=$(pwd):$PATH
+
 stages:
+  - name: cmc_manifest_creation
+    if: branch =~ feature\/*
   - name: sonarqube_scan_publish
     if: (branch = master) OR (branch =~ feature\/*)
   - name: validate_against_QA
@@ -25,29 +34,41 @@ stages:
 
 jobs:
   include:
-      - stage: sonarqube_scan_publish
-        script: echo 'sonarqube_scan_publish'
-      - stage: validate_against_SIT
+      - stage: cmc_manifest_creation
         script:
-          - echo 'validate_against_SIT'
-      - stage: deploy_to_SIT
-        script: echo 'deploy_to_SIT'
+          - set +e
+          - adx cmc:manifest --message "$TRAVIS_BRANCH $TRAVIS_COMMIT_MESSAGE"
+          - set -e
+
+      - stage: sonarqube_scan_publish
+        script: sonar-scanner -Dsonar.sources=. -Dsonar.login=$SONAR_LOGIN -Dsonar.analysis.mode=publish
+
+      - stage: validate_against_QA
+        script:
+          - adx sort:check
+          - adx deploy:package --deploy.testLevel NoTestRun --target QA
+
+      - stage: deploy_to_QA
+        script:
+          - adx sort:check
+          - adx deploy:package --deploy.testLevel RunLocalTests --deploy.checkOnly false --target QA
+
       - stage: validate_against_UAT
-        script: echo 'validate_against_UAT'
+        script:
+          - adx sort:check
+          - adx deploy:package --deploy.testLevel NoTestRun --target UAT
+
       - stage: deploy_to_UAT
-        script: echo 'deploy_to_UAT'
+        script:
+          - adx sort:check
+          - adx deploy:package --deploy.testLevel RunLocalTests --deploy.checkOnly false --target UAT
+
       - stage: validate_against_PROD
-        script: echo 'validate_against_PROD'
+        script:
+          - adx sort:check
+          - adx deploy:package --deploy.testLevel NoTestRun --target PROD
+
       - stage: deploy_to_PROD
-        script: echo 'deploy_to_PROD'
-
-env:
-- URL=https://appiriodx-website-prod.s3.amazonaws.com/downloads/adx-dev-cli-linux.tar.gz
-
-before_install:
-- mkdir adx
-- cd adx
-- wget $URL
-- tar xzf adx-dev-cli-linux.tar.gz
-- env
-- export PATH=$(pwd):$PATH
+        script:
+          - adx sort:check
+          - adx deploy:package --deploy.testLevel RunLocalTests --deploy.checkOnly false --target PROD
