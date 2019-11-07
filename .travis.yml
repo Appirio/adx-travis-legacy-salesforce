@@ -34,18 +34,18 @@ stages:
 
 jobs:
   allow_failures:
-    - script: adx cmc:manifest --message "$TRAVIS_BRANCH $TRAVIS_COMMIT_MESSAGE"
+    - stage: cmc_manifest_creation
 
   include:
       - stage: cmc_manifest_creation
-        before_script:
-          - wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-3.0.3.778-linux.zip
-          - unzip sonar-scanner-cli-3.0.3.778-linux.zip
-          - export PATH=$(pwd)/sonar-scanner-3.0.3.778-linux/bin:$PATH
         script:
           - adx cmc:manifest --message "$TRAVIS_BRANCH $TRAVIS_COMMIT_MESSAGE"
 
       - stage: sonarqube_scan_publish
+        before_script:
+          - wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-3.0.3.778-linux.zip
+          - unzip sonar-scanner-cli-3.0.3.778-linux.zip
+          - export PATH=$(pwd)/sonar-scanner-3.0.3.778-linux/bin:$PATH
         script: sonar-scanner -Dsonar.sources=. -Dsonar.login=$SONAR_LOGIN -Dsonar.analysis.mode=publish
 
       - stage: validate_against_QA
