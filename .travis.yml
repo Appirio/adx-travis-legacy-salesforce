@@ -29,7 +29,7 @@ stages:
   - name: validate_against_PROD
     if: branch = master
   - name: deploy_to_PROD
-    if: tag =~ /^v[0-9.]+$/
+    if: tag =~ ^v[0-9.]+$
 
 
 jobs:
