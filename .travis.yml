@@ -6,23 +6,6 @@ language: generic
 git:
   depth: false
 
-stages:
-  - sonarqube_scan_publish
-    if: (branch = master) OR (branch =~ feature\/*)
-  - validate_against_QA
-    if: branch =~ feature\/*
-  - deploy_to_QA
-    if: branch = QA
-  - validate_against_UAT
-    if: branch = QA
-  - deploy_to_UAT
-    if: branch = master
-  - validate_against_PROD
-    if: branch = master
-  - deploy_to_PROD
-    if: tag =~ /^v[0-9.]+$/
-
-
 jobs:
   include:
       - stage: sonarqube_scan_publish
