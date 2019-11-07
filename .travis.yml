@@ -8,10 +8,9 @@ git:
 
 before_install:
 - mkdir adx
-- cd adx
-- wget https://appiriodx-website-prod.s3.amazonaws.com/downloads/adx-dev-cli-linux.tar.gz
-- tar xzf adx-dev-cli-linux.tar.gz
-- export PATH=$(pwd):$PATH
+- wget https://appiriodx-website-prod.s3.amazonaws.com/downloads/adx-dev-cli-linux.tar.gz -0 adx
+- tar xzf adx/adx-dev-cli-linux.tar.gz
+- export PATH=$(pwd)/adx:$PATH
 
 stages:
   - name: cmc_manifest_creation
@@ -44,10 +43,9 @@ jobs:
       - stage: sonarqube_scan_publish
         name: sonarqube_scan_publish
         before_script:
-          - cd ..
-          - wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-3.0.3.778-linux.zip
-          - unzip sonar-scanner-cli-3.0.3.778-linux.zip
-          - export PATH=$(pwd)/sonar-scanner-3.0.3.778-linux/bin:$PATH
+          - wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-3.0.3.778-linux.zip -0 adx
+          - unzip adx/sonar-scanner-cli-3.0.3.778-linux.zip
+          - export PATH=$(pwd)/adx/sonar-scanner-3.0.3.778-linux/bin:$PATH
         script: sonar-scanner -Dsonar.sources=. -Dsonar.login=$SONAR_LOGIN -Dsonar.analysis.mode=publish
 
       - stage: validate_against_QA
