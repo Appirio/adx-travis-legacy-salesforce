@@ -1,0 +1,107 @@
+image: 'appirio/dx:latest'
+stages:
+  - track_changes
+  - quality_scan
+  - deploy
+  - validate
+  - merge_request
+sonarqube_scan:
+  stage: quality_scan
+  script:
+    - >-
+      sonar-scanner -Dsonar.sources=. -Dsonar.login=$SONAR_LOGIN
+      -Dsonar.gitlab.project_id=$CI_PROJECT_ID
+      -Dsonar.gitlab.commit_sha=$CI_COMMIT_SHA
+      -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME -Dsonar.analysis.mode=preview
+  only:
+    - /^feature\/.*/
+  except:
+    - tags
+    - schedules
+sonarqube_scan_publish:
+  stage: quality_scan
+  script:
+    - >-
+      sonar-scanner -Dsonar.sources=. -Dsonar.login=$SONAR_LOGIN
+      -Dsonar.projectVersion=$CI_COMMIT_TAG -Dsonar.analysis.mode=publish
+  only:
+    - master
+    - QA
+  except:
+    - tags
+    - schedules
+cmc_manifest_creation:
+  stage: track_changes
+  script:
+    - 'adx cmc:manifest --message "$CI_COMMIT_REF_NAME $CI_COMMIT_MESSAGE"'
+  allow_failure: true
+  only:
+    - /^feature\/.*/
+  except:
+    - tags
+    - schedules
+validate_against_QA:
+  stage: validate
+  script:
+    - 'adx sort:check'
+    - 'adx deploy:package --deploy.testLevel NoTestRun --target QA'
+  cache: &ref_0
+    key: $CI_COMMIT_REF_SLUG
+    paths:
+      - node
+  except: &ref_1
+    - schedules
+  only:
+    - /^feature/.*/
+deploy_to_QA:
+  stage: deploy
+  script:
+    - 'adx sort:check'
+    - >-
+      adx deploy:package --deploy.testLevel RunLocalTests --deploy.checkOnly
+      false --target QA
+  cache: *ref_0
+  except: *ref_1
+  only:
+    - /^QA/
+validate_against_UAT:
+  stage: validate
+  script:
+    - 'adx sort:check'
+    - 'adx deploy:package --deploy.testLevel NoTestRun --target UAT'
+  cache: *ref_0
+  except: *ref_1
+  only:
+    - /^QA/
+deploy_to_UAT:
+  stage: deploy
+  script:
+    - 'adx sort:check'
+    - >-
+      adx deploy:package --deploy.testLevel RunLocalTests --deploy.checkOnly
+      false --target UAT
+  cache: *ref_0
+  except: *ref_1
+  only:
+    - master
+validate_against_PROD:
+  stage: validate
+  script:
+    - 'adx sort:check'
+    - 'adx deploy:package --deploy.testLevel NoTestRun --target PROD'
+  cache: *ref_0
+  except: *ref_1
+  only:
+    - master
+deploy_to_PROD:
+  stage: deploy
+  script:
+    - 'adx sort:check'
+    - >-
+      adx deploy:package --deploy.testLevel RunLocalTests --deploy.checkOnly
+      false --target PROD
+  cache: *ref_0
+  except: *ref_1
+  only:
+    - '/^v[0-9.]+$/'
+  when: manual

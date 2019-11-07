@@ -1,0 +1,16 @@
+{
+  "cmc": {
+    "enabled": true,
+    "products": ["Appirio DX"]
+  },
+  "continuousIntegrationType": "gitlab",
+  "continuousIntegrationURL": "https://gitlab.appirio.com",
+  "projectType": [
+    "legacy-salesforce"
+  ],
+  "rollbar": {
+    "enabled": true
+  },
+  "sourceBranchToClone": "QA",
+  "sourceControlType": "git"
+}
