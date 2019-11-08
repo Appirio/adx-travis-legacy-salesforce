@@ -4,8 +4,9 @@ cache: false
 language: generic
 
 env:
-  - adx_dir=adx-cli
-  - sonar_dir=sonarqube
+  jobs:
+    - adx_dir=adx-cli
+    - sonar_dir=sonarqube
 
 before_script:
 - git fetch --depth=10000
