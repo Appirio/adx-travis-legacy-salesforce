@@ -3,8 +3,11 @@ os: linux
 cache: false
 language: generic
 
-before_install:
-- export adx_dir = adx-cli
+env:
+  - adx_dir=adx-cli
+  - sonar_dir=sonarqube
+
+before_script:
 - git fetch --unshallow
 - wget https://appiriodx-website-prod.s3.amazonaws.com/downloads/adx-dev-cli-linux.tar.gz -P $adx_dir
 - (cd $adx_dir && tar -xzf adx-dev-cli-linux.tar.gz)
@@ -45,7 +48,6 @@ jobs:
       - stage: sonarqube_scan_publish
         name: sonarqube_scan_publish
         before_script:
-          - export sonar_dir = sonarqube
           - wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-3.0.3.778-linux.zip -P $sonar_dir
           - (cd $sonar_dir && unzip sonar-scanner-cli-3.0.3.778-linux.zip)
           - export PATH=$(pwd)/$sonar_dir/sonar-scanner-3.0.3.778-linux/bin:$PATH
