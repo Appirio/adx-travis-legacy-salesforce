@@ -8,7 +8,7 @@ env:
   - sonar_dir=sonarqube
 
 before_script:
-- git fetch --unshallow
+- git fetch --depth=10000
 - wget https://appiriodx-website-prod.s3.amazonaws.com/downloads/adx-dev-cli-linux.tar.gz -P $adx_dir
 - (cd $adx_dir && tar -xzf adx-dev-cli-linux.tar.gz)
 - export PATH=$(pwd)/$adx_dir:$PATH
