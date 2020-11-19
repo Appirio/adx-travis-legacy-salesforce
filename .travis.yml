@@ -1,6 +1,6 @@
 sudo: true
 os: linux
-dist: bionic
+dist: focal
 cache: false
 language: generic
 
