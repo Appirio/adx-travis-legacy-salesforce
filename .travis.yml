@@ -4,45 +4,20 @@ dist: focal
 cache: false
 language: generic
 
-
-before_script:
+before_install:
 - export adx_dir=adx-cli
 - git fetch --depth=10000
-- wget https://dx.appirio.com/downloads/adx-cli-linux.tar.gz -P $adx_dir
-- (cd $adx_dir && tar -xzf adx-cli-linux.tar.gz)
+- wget https://appiriodx-cli-prerelease.s3.us-east-2.amazonaws.com/dev-adx-135813-linux -P $adx_dir
+- (cd $adx_dir && mv dev-adx-135813-linux adx && chmod 777 adx)
 - export PATH=$(pwd)/$adx_dir:$PATH
 
 stages:
-  - name: cmc_manifest_creation
-    if: branch =~ feature\/*
   - name: sonarqube_scan
     if: tag IS blank
-  - name: validate_against_QA
-    if: branch =~ feature\/*
-  - name: deploy_to_QA
-    if: branch = QA
-  - name: validate_against_UAT
-    if: branch = QA
-  - name: deploy_to_UAT
-    if: branch = master
-  - name: validate_against_PROD
-    if: branch = master
-
-# Ideally, This job should be triggered manually. But currently travis ci does not support manual actions.
-#  This 'Deploy to PROD' job gets triggered whenever there is matching tag on commit.
-# This will be updated in future when travis ci starts supporting manual trigger.
-  - name: deploy_to_PROD
-    if: tag =~ /^v[0-9.]+$/
 
 jobs:
-  allow_failures:
-    - stage: cmc_manifest_creation
 
   include:
-      - stage: cmc_manifest_creation
-        name: cmc_manifest_creation
-        script:
-          - adx cmc:manifest --message "$TRAVIS_BRANCH $TRAVIS_COMMIT_MESSAGE"
 
       - stage: sonarqube_scan
         name: sonarqube_scan
@@ -51,40 +26,5 @@ jobs:
           - wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.4.0.2170-linux.zip -P $sonar_dir
           - (cd $sonar_dir && unzip sonar-scanner-cli-4.4.0.2170-linux.zip)
           - export PATH=$(pwd)/$sonar_dir/sonar-scanner-4.4.0.2170-linux/bin:$PATH
-        script: sonar-scanner -Dsonar.login=$SONAR_ENT_LOGIN -Dsonar.branch.name=$TRAVIS_BRANCH -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
-
-      - stage: validate_against_QA
-        name: validate_against_QA
         script:
-          - adx sort:check
-          - adx deploy:package --deploy.testLevel NoTestRun --target QA
-
-      - stage: deploy_to_QA
-        name: deploy_to_QA
-        script:
-          - adx sort:check
-          - adx deploy:package --deploy.testLevel RunLocalTests --deploy.checkOnly false --target QA
-
-      - stage: validate_against_UAT
-        name: validate_against_UAT
-        script:
-          - adx sort:check
-          - adx deploy:package --deploy.testLevel NoTestRun --target UAT
-
-      - stage: deploy_to_UAT
-        name: deploy_to_UAT
-        script:
-          - adx sort:check
-          - adx deploy:package --deploy.testLevel RunLocalTests --deploy.checkOnly false --target UAT
-
-      - stage: validate_against_PROD
-        name: validate_against_PROD
-        script:
-          - adx sort:check
-          - adx deploy:package --deploy.testLevel NoTestRun --target PROD
-
-      - stage: deploy_to_PROD
-        name: deploy_to_PROD
-        script:
-          - adx sort:check
-          - adx deploy:package --deploy.testLevel RunLocalTests --deploy.checkOnly false --target PROD
+          - adx test:execute --command="sonar-scanner -Dsonar.login='$SONAR_RAHUL_LOGIN' -Dsonar.qualitygate.wait=true" --tool=SonarQube --monitoralias=TEST
