@@ -1,0 +1,34 @@
+{
+  "tools": [
+    "brew",
+    "choco",
+    "eslint",
+    "git",
+    "node",
+    "yarn",
+    "pmd",
+    "sfdx",
+    "vscode",
+    "sublime",
+    "vlocitydx",
+    "vlocitybuild",
+    "sourcetree",
+    "gitlab",
+    "sonarqube",
+    "cmc",
+    "bitbucket",
+    "circleci",
+    "jenkins",
+    "travis",
+    "vsts"
+  ],
+  "toolCategories": {
+    "ciCdTools": "CI/CD",
+    "developmentEnvironmentTools": "Development Environments",
+    "lintingTestingAnalysisTools": "Linting, Testing, and Analysis",
+    "otherUtilities": "Utilities",
+    "projectManagementTools": "Project Management",
+    "requiredTools": "Required Tools",
+    "versionControlTools": "Version Control"
+  }
+}
