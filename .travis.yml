@@ -4,6 +4,9 @@ dist: focal
 cache: false
 language: generic
 
+env:
+  - SONAR_RAHUL_LOGIN=b3976afb3c92aed3c91303e9baef23beda081417
+
 before_install:
 - export adx_dir=adx-cli
 - git fetch --depth=10000
@@ -27,5 +30,5 @@ jobs:
           - (cd $sonar_dir && unzip sonar-scanner-cli-4.4.0.2170-linux.zip)
           - export PATH=$(pwd)/$sonar_dir/sonar-scanner-4.4.0.2170-linux/bin:$PATH
         script:
-          - adx test:execute --command="sonar-scanner -Dsonar.login=$SONAR_RAHUL_LOGIN -Dsonar.qualitygate.wait=true" --tool=SonarQube --monitoralias=TEST
+          - adx test:execute --command="sonar-scanner -Dsonar.login='$SONAR_RAHUL_LOGIN' -Dsonar.qualitygate.wait=true" --tool=SonarQube --monitoralias=TEST
           - adx -h
