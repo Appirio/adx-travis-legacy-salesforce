@@ -14,8 +14,8 @@ before_script:
 stages:
   - name: cmc_manifest_creation
     if: branch =~ feature\/*
-  - name: sonarqube_scan
-    if: tag IS blank
+  # - name: sonarqube_scan
+  #   if: tag IS blank
   - name: validate_against_QA
     if: branch =~ feature\/*
   - name: deploy_to_QA
